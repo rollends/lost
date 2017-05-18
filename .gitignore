@@ -1,0 +1,5 @@
+.git/
+*.o
+luac
+lua
+lostvm
