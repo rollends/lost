@@ -8,6 +8,7 @@
 
 #include "lua.hpp"
 
+#include "lost_luastatepool.hpp"
 #include "lost_scheduler.hpp"
 
 class JobProducer
@@ -15,7 +16,7 @@ class JobProducer
     friend struct rJobProducer;
 
 public:
-    JobProducer(Scheduler&);
+    JobProducer(Scheduler&, LuaStatePool&);
     ~JobProducer();
 
     void produceFromFile(std::string filePath, int priority);
@@ -41,6 +42,7 @@ private:
     std::condition_variable_any requestPending;
 
     Scheduler& scheduler;
+    LuaStatePool& statePool;
 
     std::thread thread;
 };

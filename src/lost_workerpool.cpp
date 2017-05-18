@@ -11,7 +11,7 @@ extern "C"
 namespace
 {
     thread_local bool workerShouldLive = true;
-    void worker(Scheduler& scheduler)
+    void worker(Scheduler& scheduler, LuaStatePool& statePool)
     {
         LostJob job;
         while(workerShouldLive)
@@ -25,7 +25,7 @@ namespace
                 break;
 
             default:
-                lua_close(job.state);
+                statePool.giveState(job.state);
                 break;
             }
         }
@@ -38,14 +38,15 @@ int worker_kill( lua_State * )
     return 0;
 }
 
-WorkerPool::WorkerPool(Scheduler& scheduler, JobProducer& factory)
+WorkerPool::WorkerPool(Scheduler& scheduler, JobProducer& factory, LuaStatePool& pool)
   : scheduler(scheduler),
-    factory(factory)
+    factory(factory),
+    statePool(pool)
 {
     std::generate_n( std::back_inserter(workers),
                      InitialThreadCount,
-                     [&scheduler]() {
-                         return std::thread(worker, std::ref(scheduler));
+                     [&scheduler, &pool]() {
+                         return std::thread(worker, std::ref(scheduler), std::ref(pool));
                      } );
 }
 

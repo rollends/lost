@@ -17,9 +17,10 @@ struct rJobProducer
 };
 
 
-JobProducer::JobProducer(Scheduler& s)
+JobProducer::JobProducer(Scheduler& s, LuaStatePool& pool)
   : shouldLive(true),
     scheduler(s),
+    statePool(pool),
     thread( rJobProducer{ *this } )
 {
 }
@@ -28,8 +29,6 @@ JobProducer::~JobProducer()
 {
     kill();
 }
-
-int worker_kill( lua_State * );
 
 void JobProducer::kill()
 {
@@ -56,16 +55,6 @@ void JobProducer::operator () ()
 {
     struct ExitException{ };
 
-    std::array<luaL_Reg, 6> permittedLibraries
-    {
-        luaL_Reg{"_G", luaopen_base}
-      , luaL_Reg{LUA_COLIBNAME, luaopen_coroutine}
-      , luaL_Reg{LUA_TABLIBNAME, luaopen_table}
-      , luaL_Reg{LUA_STRLIBNAME, luaopen_string}
-      , luaL_Reg{LUA_MATHLIBNAME, luaopen_math}
-      , luaL_Reg{LUA_UTF8LIBNAME, luaopen_utf8}
-    };
-
     try
     {
         JobRequest request;
@@ -90,19 +79,7 @@ void JobProducer::operator () ()
                 mutex.unlock();
             }
 
-            auto state = luaL_newstate();
-
-            // Open libraries for the state
-            for (auto&& library : permittedLibraries)
-            {
-                luaL_requiref(state, library.name, library.func, 1);
-                lua_pop(state, 1);
-            }
-
-            lua_createtable(state, 0, 1);
-            lua_pushcfunction(state, worker_kill);
-            lua_setfield(state, lua_gettop(state) - 1, "kill");
-            lua_setglobal(state, "worker");
+            auto state = statePool.takeState();
 
             luaL_dofile(state, request.file.c_str());
             lua_getglobal(state, "task_main");

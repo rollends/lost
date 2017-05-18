@@ -2,25 +2,19 @@
 #include <cstdlib>
 #include <thread>
 
-#include "lua.hpp"
-
-extern "C"
-{
-    #include "lvm.h"
-}
-
-#include "lost_job.hpp"
 #include "lost_jobproducer.hpp"
+#include "lost_luastatepool.hpp"
 #include "lost_scheduler.hpp"
 #include "lost_workerpool.hpp"
 
 int main()
 {
     Scheduler scheduler;
-    JobProducer factory(scheduler);
+    LuaStatePool statePool(50);
+    JobProducer factory(scheduler, statePool);
 
     {
-        WorkerPool workers(scheduler, factory);
+        WorkerPool workers(scheduler, factory, statePool);
 
         // Dummy work
         for(int i = 0; i < 300; ++i)

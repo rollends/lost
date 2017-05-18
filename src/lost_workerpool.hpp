@@ -4,18 +4,20 @@
 #include <thread>
 #include <vector>
 
-#include "lost_scheduler.hpp"
 #include "lost_jobproducer.hpp"
+#include "lost_luastatepool.hpp"
+#include "lost_scheduler.hpp"
 
 class WorkerPool
 {
 public:
-    WorkerPool(Scheduler&, JobProducer&);
+    WorkerPool(Scheduler&, JobProducer&, LuaStatePool&);
     ~WorkerPool();
 
 private:
     Scheduler& scheduler;
     JobProducer& factory;
+    LuaStatePool& statePool;
     std::vector<std::thread> workers;
 
     static size_t constexpr InitialThreadCount = 3;
