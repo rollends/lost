@@ -4,6 +4,7 @@
 #include "lost_luastatepool.hpp"
 
 int worker_kill( lua_State * );
+int worker_newjob( lua_State * state );
 
 namespace
 {
@@ -38,6 +39,8 @@ LuaStatePool::LuaStatePool(size_t poolSize)
         lua_createtable(state, 0, 1);
         lua_pushcfunction(state, worker_kill);
         lua_setfield(state, lua_gettop(state) - 1, "kill");
+        lua_pushcfunction(state, worker_newjob);
+        lua_setfield(state, lua_gettop(state) - 1, "new_job");
         lua_setglobal(state, "worker");
     }
 }

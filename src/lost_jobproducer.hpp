@@ -18,7 +18,7 @@ public:
     ~JobProducer();
 
     void produceFromFile(std::string filePath, int priority);
-    //void produceFromStack(lua_State * state, int priority);
+    void produceFromStack(lua_State * state, int priority);
 
 private:
     void kill();
