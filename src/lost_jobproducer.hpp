@@ -13,8 +13,6 @@
 
 class JobProducer
 {
-    friend struct rJobProducer;
-
 public:
     JobProducer(Scheduler&, LuaStatePool&);
     ~JobProducer();
@@ -33,6 +31,12 @@ private:
         std::string file;
         int priority;
         RequestType type;
+    };
+
+    struct rJobProducer
+    {
+        JobProducer& producer;
+        void operator () ();
     };
 
     volatile bool shouldLive;

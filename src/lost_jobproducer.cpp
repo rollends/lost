@@ -6,17 +6,6 @@ extern "C"
     #include "ldo.h"
 }
 
-struct rJobProducer
-{
-    JobProducer& producer;
-
-    void operator () ()
-    {
-        producer();
-    }
-};
-
-
 JobProducer::JobProducer(Scheduler& s, LuaStatePool& pool)
   : shouldLive(true),
     scheduler(s),
@@ -48,6 +37,11 @@ void JobProducer::produceFromFile(std::string filePath, int priority)
     std::unique_lock<std::mutex> door(mutex);
     queue.push(JobRequest{filePath, priority, FILE});
     requestPending.notify_one();
+}
+
+void JobProducer::rJobProducer::operator () ()
+{
+    producer();
 }
 
 void JobProducer::operator () ()
