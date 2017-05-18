@@ -24,14 +24,15 @@ SYSLIBS=
 MYCFLAGS=
 MYLDFLAGS=
 MYLIBS=
-MYOBJS=lostvm.o lost_job.o lost_scheduler.o lost_jobproducer.o
+MYOBJS=lostvm.o lost_job.o lost_scheduler.o lost_jobproducer.o lost_workerpool.o
 
 # == My Object Files ====
 lostvm.o: lostvm.cpp
 
 lost_scheduler.o: lost_scheduler.cpp lost_scheduler.hpp lost_job.hpp lua.h
-lost_jobproducer.o: lost_jobproducer.cpp lost_jobproducer.hpp lost_scheduler.hpp lost_job.hpp lua.h ldo.h lvm.h
+lost_jobproducer.o: lost_jobproducer.cpp lost_jobproducer.hpp lost_scheduler.hpp lost_job.hpp lua.h ldo.h
 lost_job.o: lost_job.cpp lost_job.hpp lua.h
+lost_workerpool.o: lost_workerpool.cpp lost_workerpool.hpp lost_scheduler.hpp lost_jobproducer.hpp lost_job.hpp lua.h lvm.h
 
 # == END OF USER SETTINGS -- NO NEED TO CHANGE ANYTHING BELOW THIS LINE =======
 
@@ -52,7 +53,7 @@ LUAC_T=	luac
 LUAC_O=	luac.o
 
 LOST_VM_T = lostvm
-LOST_VM_O = lostvm.o lost_scheduler.o lost_jobproducer.o lost_job.o
+LOST_VM_O = $(MYOBJS)
 
 ALL_O= $(BASE_O) $(LUA_O) $(LUAC_O) $(LOST_VM_O)
 ALL_T= $(LUA_A) $(LUA_T) $(LUAC_T) $(LOST_VM_T)

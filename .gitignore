@@ -1,5 +1,6 @@
 .git/
 *.o
+*.a
 luac
 lua
 lostvm
