@@ -41,20 +41,36 @@ int worker_kill( lua_State * )
 
 int worker_newjob( lua_State * state )
 {
-    if(!lua_isinteger(state, lua_gettop(state)) || !lua_isfunction(state, lua_gettop(state) - 1))
+    auto const top = lua_gettop(state);
+    if(top != 2)
     {
-        lua_pop(state, 2);
-        lua_pushboolean(state, 0);
-        return 1;
+        lua_pushliteral(state, "incorrect number of arguments");
+        lua_error(state);
+    }
+    else if(!lua_isinteger(state, lua_gettop(state)))
+    {
+        lua_pushliteral(state, "priority must be an integral value");
+        lua_error(state);
+    }
+    else if(!lua_isfunction(state, lua_gettop(state) - 1))
+    {
+        lua_pushliteral(state, "job must be a function type");
+        lua_error(state);
     }
 
-    auto priority = lua_tointeger(state, lua_gettop(state));
+    auto priority = lua_tointeger(state, top);
+
+    if( priority < 0 )
+    {
+        lua_pushliteral(state, "priority must be a positive integer");
+        lua_error(state);
+    }
+
     lua_pop(state, 1);
 
     gJobFactory->produceFromStack(state, priority);
 
-    lua_pushboolean(state, 1);
-    return 1;
+    return 0;
 }
 
 WorkerPool::WorkerPool(Scheduler& scheduler, JobProducer& factory, LuaStatePool& pool)

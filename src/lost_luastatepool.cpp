@@ -1,6 +1,7 @@
 #include "lua.hpp"
 
 #include "lost_allocator.hpp"
+#include "lost_library.hpp"
 #include "lost_luastatepool.hpp"
 
 int worker_kill( lua_State * );
@@ -25,6 +26,8 @@ LuaStatePool::LuaStatePool(size_t poolSize)
     indFullSlot(0),
     available(poolSize)
 {
+    auto libWorker = makeLibrary("worker", "kill", worker_kill, "new_job", worker_newjob);
+
     for(size_t i = 0; i < statePool.capacity(); ++i)
     {
         lua_State* state = statePool[i] = lua_newstate(lost_debug_frealloc, NULL);
@@ -36,12 +39,7 @@ LuaStatePool::LuaStatePool(size_t poolSize)
             lua_pop(state, 1);
         }
 
-        lua_createtable(state, 0, 1);
-        lua_pushcfunction(state, worker_kill);
-        lua_setfield(state, lua_gettop(state) - 1, "kill");
-        lua_pushcfunction(state, worker_newjob);
-        lua_setfield(state, lua_gettop(state) - 1, "new_job");
-        lua_setglobal(state, "worker");
+        libWorker( state );
     }
 }
 
