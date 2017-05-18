@@ -1,5 +1,6 @@
 #include "lua.hpp"
 
+#include "lost_allocator.hpp"
 #include "lost_luastatepool.hpp"
 
 int worker_kill( lua_State * );
@@ -25,7 +26,7 @@ LuaStatePool::LuaStatePool(size_t poolSize)
 {
     for(size_t i = 0; i < statePool.capacity(); ++i)
     {
-        lua_State* state = statePool[i] = luaL_newstate();
+        lua_State* state = statePool[i] = lua_newstate(lost_debug_frealloc, NULL);
 
         // Open libraries for the state
         for (auto&& library : permittedLibraries)
@@ -59,7 +60,6 @@ void LuaStatePool::giveState(lua_State* state)
 lua_State* LuaStatePool::takeState()
 {
     std::unique_lock<std::mutex> door(mutex);
-
     if( available == 0 )
     {
         freeState.wait( door,

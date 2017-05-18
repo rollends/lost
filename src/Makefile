@@ -24,16 +24,17 @@ SYSLIBS=
 MYCFLAGS=
 MYLDFLAGS=
 MYLIBS=
-MYOBJS=lostvm.o lost_job.o lost_scheduler.o lost_jobproducer.o lost_workerpool.o lost_luastatepool.o
+MYOBJS=lostvm.o lost_job.o lost_scheduler.o lost_jobproducer.o lost_workerpool.o lost_luastatepool.o lost_allocator.o
 
 # == My Object Files ====
-lostvm.o: lostvm.cpp
+lostvm.o: lostvm.cpp lost_scheduler.hpp lost_jobproducer.hpp lost_workerpool.hpp lost_luastatepool.hpp lost_allocator.hpp
 
 lost_scheduler.o: lost_scheduler.cpp lost_scheduler.hpp lost_job.hpp lua.h
 lost_jobproducer.o: lost_jobproducer.cpp lost_jobproducer.hpp lost_scheduler.hpp lost_job.hpp lua.h ldo.h
 lost_job.o: lost_job.cpp lost_job.hpp lua.h
 lost_workerpool.o: lost_workerpool.cpp lost_workerpool.hpp lost_scheduler.hpp lost_jobproducer.hpp lost_luastatepool.hpp lost_job.hpp lua.h lvm.h
 lost_luastatepool.o: lost_luastatepool.cpp lost_luastatepool.hpp lua.h
+lost_allocator.o: lost_allocator.cpp lost_allocator.hpp lua.h
 
 # == END OF USER SETTINGS -- NO NEED TO CHANGE ANYTHING BELOW THIS LINE =======
 
