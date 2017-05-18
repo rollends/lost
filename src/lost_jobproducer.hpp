@@ -39,7 +39,7 @@ private:
 
     std::queue<JobRequest> queue;
     std::mutex mutex;
-    std::condition_variable_any requestPending;
+    std::condition_variable requestPending;
 
     Scheduler& scheduler;
     LuaStatePool& statePool;

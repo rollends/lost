@@ -2,24 +2,22 @@
 
 void Scheduler::giveJob(LostJob const &job)
 {
-    std::lock_guard<std::mutex> guard(mutex);
+    std::unique_lock<std::mutex> guard(mutex);
     queue.push(job);
     workPending.notify_one();
 }
 
 LostJob Scheduler::takeJob()
 {
-    mutex.lock();
+    std::unique_lock<std::mutex> door(mutex);
 
     if(queue.empty())
     {
-        workPending.wait(mutex, [this](){ return 0 != queue.size(); });
+        workPending.wait(door, [this](){ return 0 != queue.size(); });
     }
 
     LostJob job = queue.top();
     queue.pop();
-
-    mutex.unlock();
 
     return job;
 }

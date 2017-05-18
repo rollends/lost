@@ -22,7 +22,7 @@ private:
     size_t indFullSlot;
     size_t available;
     std::mutex mutex;
-    std::condition_variable_any freeState;
+    std::condition_variable freeState;
 };
 
 #endif

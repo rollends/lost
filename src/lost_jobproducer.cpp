@@ -36,9 +36,8 @@ void JobProducer::kill()
 
     do
     {
-        mutex.lock();
+        std::unique_lock<std::mutex> door(mutex);
         requestPending.notify_one();
-        mutex.unlock();
     } while( queue.size() ); // Keep looping just in case the signal is missed because there were actually items in the queue
 
     thread.join();
@@ -46,7 +45,7 @@ void JobProducer::kill()
 
 void JobProducer::produceFromFile(std::string filePath, int priority)
 {
-    std::lock_guard<std::mutex> lock(mutex);
+    std::unique_lock<std::mutex> door(mutex);
     queue.push(JobRequest{filePath, priority, FILE});
     requestPending.notify_one();
 }
@@ -62,10 +61,10 @@ void JobProducer::operator () ()
         for(;;)
         {
             {
-                mutex.lock();
+                std::unique_lock<std::mutex> door(mutex);
                 if( queue.empty() )
                 {
-                    requestPending.wait(mutex,
+                    requestPending.wait(door,
                                         [this](){
                                             if( !queue.empty() )
                                                 return true;
@@ -76,7 +75,6 @@ void JobProducer::operator () ()
                 }
                 request = queue.front();
                 queue.pop();
-                mutex.unlock();
             }
 
             auto state = statePool.takeState();
@@ -89,8 +87,5 @@ void JobProducer::operator () ()
             scheduler.giveJob( LostJob{state, request.priority} );
         }
     }
-    catch( ExitException )
-    {
-        mutex.unlock();
-    }
+    catch( ExitException ) { }
 }

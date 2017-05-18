@@ -49,31 +49,26 @@ LuaStatePool::~LuaStatePool()
 
 void LuaStatePool::giveState(lua_State* state)
 {
-    mutex.lock();
+    std::unique_lock<std::mutex> door(mutex);
     statePool[indEmptySlot] = state;
     indEmptySlot = (indEmptySlot + 1) % statePool.size();
     available++;
     freeState.notify_one();
-    mutex.unlock();
 }
 
 lua_State* LuaStatePool::takeState()
 {
-    mutex.lock();
+    std::unique_lock<std::mutex> door(mutex);
 
     if( available == 0 )
     {
-        freeState.wait( mutex,
+        freeState.wait( door,
                         [this]() {
                             return available > 0;
                         } );
     }
-
     auto result = statePool[indFullSlot];
     indFullSlot = (indFullSlot + 1) % statePool.size();
     available--;
-
-    mutex.unlock();
-
     return result;
 }

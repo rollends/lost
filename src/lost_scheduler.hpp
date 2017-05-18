@@ -16,7 +16,7 @@ public:
 private:
     std::priority_queue<LostJob> queue;
     std::mutex mutex;
-    std::condition_variable_any workPending;
+    std::condition_variable workPending;
 };
 
 #endif
