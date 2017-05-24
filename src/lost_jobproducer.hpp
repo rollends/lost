@@ -9,6 +9,7 @@
 #include "lua.hpp"
 
 #include "lost_luastatepool.hpp"
+#include "lost_mailbox.hpp"
 #include "lost_scheduler.hpp"
 
 class JobProducer
@@ -21,7 +22,6 @@ public:
     void produceFromStack(lua_State * state, int priority);
 
 private:
-    void kill();
     void operator()();
 
     enum RequestType { FILE, BYTECODE };
@@ -41,10 +41,7 @@ private:
 
     volatile bool shouldLive;
 
-    std::queue<JobRequest> queue;
-    std::mutex mutex;
-    std::condition_variable requestPending;
-
+    MailBox< JobRequest, 50 > myMail;
     Scheduler& scheduler;
     LuaStatePool& statePool;
 

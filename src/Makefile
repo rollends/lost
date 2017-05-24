@@ -9,7 +9,7 @@ PLAT=generic
 CC= gcc -std=c11
 CXX= g++ -std=c++17
 CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_2 $(SYSCFLAGS) $(MYCFLAGS)
-CXXFLAGS=-O3 -Wall -Wextra -Werror -DLUA_COMPAT_5_2
+CXXFLAGS=-Wall -Wextra -Werror -DLUA_COMPAT_5_2 -g
 LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
 LIBS= -lm $(SYSLIBS) $(MYLIBS)
 
@@ -27,10 +27,10 @@ MYLIBS=
 MYOBJS=lostvm.o lost_job.o lost_scheduler.o lost_jobproducer.o lost_workerpool.o lost_luastatepool.o lost_allocator.o
 
 # == My Object Files ====
-lostvm.o: lostvm.cpp lost_scheduler.hpp lost_jobproducer.hpp lost_workerpool.hpp lost_luastatepool.hpp lost_allocator.hpp
+lostvm.o: lostvm.cpp lost_scheduler.hpp lost_jobproducer.hpp lost_workerpool.hpp lost_luastatepool.hpp lost_allocator.hpp lost_mailbox.hpp
 
 lost_scheduler.o: lost_scheduler.cpp lost_scheduler.hpp lost_job.hpp lua.h
-lost_jobproducer.o: lost_jobproducer.cpp lost_jobproducer.hpp lost_scheduler.hpp lost_job.hpp lua.h ldo.h
+lost_jobproducer.o: lost_jobproducer.cpp lost_jobproducer.hpp lost_scheduler.hpp lost_mailbox.hpp lost_job.hpp lua.h ldo.h
 lost_job.o: lost_job.cpp lost_job.hpp lua.h
 lost_workerpool.o: lost_workerpool.cpp lost_workerpool.hpp lost_scheduler.hpp lost_jobproducer.hpp lost_luastatepool.hpp lost_job.hpp lua.h lvm.h
 lost_luastatepool.o: lost_luastatepool.cpp lost_luastatepool.hpp lost_library.hpp lua.h

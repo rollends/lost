@@ -96,27 +96,11 @@ JobProducer::JobProducer(Scheduler& s, LuaStatePool& pool)
 
 JobProducer::~JobProducer()
 {
-    kill();
-}
-
-void JobProducer::kill()
-{
-    shouldLive = false;
-
-    do
-    {
-        std::unique_lock<std::mutex> door(mutex);
-        requestPending.notify_one();
-    } while( !queue.empty() ); // Keep looping just in case the signal is missed because there were actually items in the queue
-
-    thread.join();
 }
 
 void JobProducer::produceFromFile(std::string filePath, int priority)
 {
-    std::unique_lock<std::mutex> door(mutex);
-    queue.push(JobRequest{filePath, priority, FILE});
-    requestPending.notify_one();
+    myMail.send(JobRequest{filePath, priority, FILE});
 }
 
 void JobProducer::produceFromStack(lua_State * state, int priority)
@@ -124,9 +108,7 @@ void JobProducer::produceFromStack(lua_State * state, int priority)
     std::string buffer;
     if( lua_dump(state, write2hexbuffer, &buffer, 1) == 0 )
     {
-        std::unique_lock<std::mutex> door(mutex);
-        queue.push(JobRequest{buffer, priority, BYTECODE});
-        requestPending.notify_one();
+        myMail.send(JobRequest{buffer, priority, BYTECODE});
     }
 }
 
@@ -148,21 +130,10 @@ void JobProducer::operator () ()
 
         for(;;)
         {
+            if( !myMail.receive(request) )
             {
-                std::unique_lock<std::mutex> door(mutex);
-                if( queue.empty() )
-                {
-                    requestPending.wait(door,
-                                        [this](){
-                                            if( !queue.empty() )
-                                                return true;
-                                            if( !shouldLive )
-                                                throw ExitException();
-                                            return false;
-                                        });
-                }
-                request = queue.front();
-                queue.pop();
+                std::this_thread::sleep_for(std::chrono::microseconds(10));
+                continue;
             }
 
             auto state = statePool.takeState();
